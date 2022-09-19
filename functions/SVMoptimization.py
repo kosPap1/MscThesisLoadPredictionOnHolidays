@@ -7,6 +7,7 @@ from sklearn import svm
 from skopt import BayesSearchCV
 from skopt.space import Real, Categorical, Integer
 import time
+from hyperopt import hp
 
 start_time = time.time()
 
@@ -93,12 +94,13 @@ model = svm.SVR()
 # Creating the search parameters
 search_spaces = {'degree': Integer(1, 5),
                  'C': Real(1e-6, 100),
+                 'kernel': ['linear', 'poly', 'rbf'],  # categorical parameter
 
    }
 
 optimizer = BayesSearchCV(estimator=model,
                     search_spaces=search_spaces,
-                    n_iter=200,
+                    n_iter=100,
                     n_points=4,
                     n_jobs=4,
                     iid=True,

@@ -1,14 +1,16 @@
 # Importing core libraries
 import numpy as np
-from functions.dataInput import load2008,load2010, load2011, load2012, load2013, load2009, load2016, load2015, load2014, load2018, load2019, \
+from functions.dataInput import load2008, load2010, load2011, load2012, load2013, load2009, load2016, load2015, \
+    load2014, load2018, load2019, \
     temp2009, temp2011, temp2014, temp2015, temp2013, temp2016, temp2019
-from sklearn.preprocessing import  StandardScaler
+from sklearn.preprocessing import StandardScaler
 from skopt import BayesSearchCV
 from skopt.space import Real, Categorical, Integer
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.neural_network import MLPRegressor
 
 import time
+
 start_time = time.time()
 
 loadTrainLagTarget = load2015['2015-01-06']
@@ -81,22 +83,20 @@ trainY = scaler.fit_transform(trainY)
 testX = scaler.fit_transform(testX)
 testY = scaler.fit_transform(testY)
 
+
 #######################################################################################################################
 
 # Creating a Wrapper to work around the layers problem
 
 class MLPWrapper(BaseEstimator, ClassifierMixin):
-    def __init__(self, layer1=100, layer2=100, layer3=100):
+    def __init__(self, layer1=100, layer2=100):
         self.layer1 = layer1
         self.layer2 = layer2
-        self.layer3 = layer3
-
-
 
     def fit(self, X, y):
         model = MLPRegressor(
-            hidden_layer_sizes=[self.layer1, self.layer2, self.layer3],
-        max_iter=2000)
+            hidden_layer_sizes=[self.layer1, self.layer2],
+            max_iter=2000)
         model.fit(X, y)
         self.model = model
         return self
@@ -113,14 +113,10 @@ opt = BayesSearchCV(
     search_spaces={
         'layer1': Integer(24, 256),
         'layer2': Integer(24, 256),
-        'layer3': Integer(24, 256),
-
-
 
     },
     n_iter=128, verbose=2
 )
-
 
 opt.fit(trainX, trainY.ravel())
 best_params = opt.best_params_

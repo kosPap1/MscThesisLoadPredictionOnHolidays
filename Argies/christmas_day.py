@@ -3,15 +3,15 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_percentage_error
 import xgboost as xgb
 from sklearn import svm
-from functions.dataInput import  load2015, load2016, load2018, load2019, temp2016, temp2019
+from functions.dataInput import  load2012, load2013, load2018, load2019, temp2016, temp2019
 from sklearn.preprocessing import StandardScaler
 from sklearn.neural_network import MLPRegressor
 
 # Lags creation
-loadTrainLagTarget = load2016['2016-12-25']
-loadTrainLagMinus1 = load2016['2016-12-24']
-loadTrainLagMinus7 = load2016['2016-12-18']
-loadTrainLagMinus365 = load2015['2015-12-25']
+loadTrainLagTarget = load2013['2013-12-25']
+loadTrainLagMinus1 = load2013['2013-12-24']
+loadTrainLagMinus7 = load2013['2013-12-18']
+loadTrainLagMinus365 = load2012['2012-12-25']
 tempTrainDayTarget = temp2016['2016-12-25']
 
 loadTestLagTarget = load2019['2019-12-25']
@@ -82,7 +82,7 @@ testY = scaler.fit_transform(testY)
 
 # Model training
 model = xgb.XGBRegressor(n_estimators=292, learning_rate=0.900438, max_depth=3,  booster='dart',
-                         reg_alpha= 0.01, reg_lambda = 15.5664, base_score=5 )
+                         reg_alpha= 0.01, reg_lambda = 15.5664, base_score=5)
 
 model.fit(trainX, trainY)
 
@@ -91,14 +91,15 @@ model.fit(trainX, trainY)
 y_pred = model.predict(testX)
 
 #######################################################################################################################
-MLPreg = MLPRegressor(hidden_layer_sizes=(137, 47), random_state=0).fit(trainX, trainY.ravel())
+MLPreg = MLPRegressor(hidden_layer_sizes=(233, 512, 512), random_state=0, early_stopping=True,
+                      solver='adam').fit(trainX, trainY.ravel())
 
 y_pred_MLP = MLPreg.predict(testX)
 
 #######################################################################################################################
 # running the SVM predictor
 
-modelSVM = svm.SVR(kernel='rbf', C=33.2408, degree=3)
+modelSVM = svm.SVR(kernel='rbf', C=33.2408, gamma='auto')
 modelSVM.fit(trainX, trainY.ravel())
 y_predSVM = modelSVM.predict(testX)
 

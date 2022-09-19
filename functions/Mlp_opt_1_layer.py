@@ -86,16 +86,15 @@ testY = scaler.fit_transform(testY)
 # Creating a Wrapper to work around the layers problem
 
 class MLPWrapper(BaseEstimator, ClassifierMixin):
-    def __init__(self, layer1=100, layer2=100, layer3=100):
+    def __init__(self, layer1=100):
         self.layer1 = layer1
-        self.layer2 = layer2
-        self.layer3 = layer3
+
 
 
 
     def fit(self, X, y):
         model = MLPRegressor(
-            hidden_layer_sizes=[self.layer1, self.layer2, self.layer3],
+            hidden_layer_sizes=[self.layer1],
         max_iter=2000)
         model.fit(X, y)
         self.model = model
@@ -112,8 +111,7 @@ opt = BayesSearchCV(
     estimator=MLPWrapper(),
     search_spaces={
         'layer1': Integer(24, 256),
-        'layer2': Integer(24, 256),
-        'layer3': Integer(24, 256),
+
 
 
 

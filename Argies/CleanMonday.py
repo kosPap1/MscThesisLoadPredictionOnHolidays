@@ -96,7 +96,8 @@ y_pred = model.predict(testX)
 
 #######################################################################################################################
 
-MLPreg = MLPRegressor(hidden_layer_sizes=( 33, 46), random_state=1).fit(trainX, trainY.ravel())
+MLPreg = MLPRegressor(hidden_layer_sizes=(126), random_state=0, activation='relu', solver='sgd',
+                      early_stopping=True).fit(trainX, trainY.ravel())
 
 y_pred_MLP = MLPreg.predict(testX)
 #######################################################################################################################

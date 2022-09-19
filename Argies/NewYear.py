@@ -82,26 +82,22 @@ testY = scaler.fit_transform(testY)
 #######################################################################################################################
 
 # Model training
-model = xgb.XGBRegressor(base_score= 2.6248611982166223,
-             colsample_bytree = 0.3294976947281426,
-             learning_rate = 1.2712184143934175,
-             max_depth = 4,
-             n_estimators = 133,
-             reg_alpha = 0.3692521974457114,
-             reg_lambda = 14.59809995142499,
+model = xgb.XGBRegressor(
              booster='gbtree')
 
 model.fit(trainX, trainY)
 y_pred = model.predict(testX)
 ###########################################################
 
-MLPreg = MLPRegressor(hidden_layer_sizes=(23, 150), random_state=0, max_iter=2000).fit(trainX, trainY.ravel())
+MLPreg = MLPRegressor(hidden_layer_sizes=(64), random_state=1, activation='relu', solver='adam',
+                      early_stopping=True,
+                      max_iter=2000).fit(trainX, trainY.ravel())
 
 y_pred_MLP = MLPreg.predict(testX)
 #######################################################################################################################
 # running the SVM predictor
 
-modelSVM = svm.SVR(C=0.8936747, degree=5)
+modelSVM = svm.SVR(kernel='linear', C= 47.874)
 modelSVM.fit(trainX, trainY.ravel())
 y_predSVM = modelSVM.predict(testX)
 
@@ -134,7 +130,6 @@ plt.plot(y_predSVM, label = 'SVM')
 plt.plot(testY, label = 'actual')
 plt.legend()
 plt.show()
-
 
 
 

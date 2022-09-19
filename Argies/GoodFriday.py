@@ -3,15 +3,15 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_percentage_error
 import xgboost as xgb
 from sklearn import svm
-from functions.dataInput import load2008, load2009, load2018, load2019, temp2009, temp2019
+from functions.dataInput import load2016, load2015, load2018, load2019, temp2009, temp2019
 from sklearn.preprocessing import StandardScaler
 from sklearn.neural_network import MLPRegressor
 
 # Lags creation
-loadTrainLagTarget = load2009['2009-04-17']
-loadTrainLagMinus1 = load2009['2009-04-16']
-loadTrainLagMinus7 = load2009['2009-04-10']
-loadTrainLagMinus365 = load2008['2008-04-25']
+loadTrainLagTarget = load2016['2016-04-29']
+loadTrainLagMinus1 = load2016['2016-04-28']
+loadTrainLagMinus7 = load2016['2016-04-22']
+loadTrainLagMinus365 = load2015['2015-04-10']
 tempTrainDayTarget = temp2009['2009-04-17']
 
 loadTestLagTarget = load2019['2019-04-26']
@@ -95,14 +95,16 @@ y_pred = model.predict(testX)
 #######################################################################################################################
 
 
-MLPreg = MLPRegressor(hidden_layer_sizes=( 12, 219), random_state=1).fit(trainX, trainY.ravel())
+MLPreg = MLPRegressor(hidden_layer_sizes=(256, 205, 256), random_state=1, activation='relu', solver='sgd',
+                      early_stopping=False,
+                      max_iter=2000).fit(trainX, trainY.ravel())
 
 y_pred_MLP = MLPreg.predict(testX)
 
 #######################################################################################################################
 # running the SVM predictor
 
-modelSVM = svm.SVR(C=53.096, degree=4)
+modelSVM = svm.SVR(kernel='linear',C=52.096, degree=4)
 modelSVM.fit(trainX, trainY.ravel())
 y_predSVM = modelSVM.predict(testX)
 

@@ -5,23 +5,24 @@ from functions.dataInput import load2008,load2010, load2011, load2012, load2013,
 from sklearn.preprocessing import  StandardScaler
 from skopt import BayesSearchCV
 from skopt.space import Real, Categorical, Integer
-from sklearn.base import BaseEstimator, ClassifierMixin
-from sklearn.neural_network import MLPRegressor
+from sklearn.svm import LinearSVR, SVR
+from sklearn.pipeline import Pipeline
+
 
 import time
 start_time = time.time()
 
-loadTrainLagTarget = load2015['2015-01-06']
-loadTrainLagMinus1 = load2015['2015-01-05']
-loadTrainLagMinus7 = load2014['2014-12-31']
-loadTrainLagMinus365 = load2014['2014-01-06']
-tempTrainDayTarget = temp2015['2015-01-06']
+loadTrainLagTarget = load2009['2009-03-02']
+loadTrainLagMinus1 = load2009['2009-03-01']
+loadTrainLagMinus7 = load2009['2009-02-23']
+loadTrainLagMinus365 = load2008['2008-03-10']
+tempTrainDayTarget = temp2009['2009-03-02']
 
-loadTestLagTarget = load2019['2019-01-06']
-loadTestLagMinus1 = load2019['2019-01-05']
-loadTestLagMinus7 = load2018['2018-12-31']
-loadTestLagMinus365 = load2018['2018-01-06']
-tempTestDayTarget = temp2019['2019-01-06']
+loadTestLagTarget = load2019['2019-03-11']
+loadTestLagMinus1 = load2019['2019-03-10']
+loadTestLagMinus7 = load2019['2019-03-04']
+loadTestLagMinus365 = load2018['2018-02-19']
+tempTestDayTarget = temp2019['2019-03-11']
 
 # Transforming to numpy arrays
 loadTrainLagTarget = loadTrainLagTarget.to_numpy()
@@ -83,47 +84,39 @@ testY = scaler.fit_transform(testY)
 
 #######################################################################################################################
 
-# Creating a Wrapper to work around the layers problem
+# pipeline class is used as estimator to enable
+# search over different model types
+pipe = Pipeline([
+    ('model', SVR())
+])
 
-class MLPWrapper(BaseEstimator, ClassifierMixin):
-    def __init__(self, layer1=100, layer2=100, layer3=100):
-        self.layer1 = layer1
-        self.layer2 = layer2
-        self.layer3 = layer3
+# single categorical value of 'model' parameter is
+# sets the model class
+# We will get ConvergenceWarnings because the problem is not well-conditioned.
+# But that's fine, this is just an example.
+linsvc_search = {
+    'model': [LinearSVR(max_iter=1000)],
+    'model__C': (1e-6, 1e+6, 'log-uniform'),
+}
 
-
-
-    def fit(self, X, y):
-        model = MLPRegressor(
-            hidden_layer_sizes=[self.layer1, self.layer2, self.layer3],
-        max_iter=2000)
-        model.fit(X, y)
-        self.model = model
-        return self
-
-    def predict(self, X):
-        return self.model.predict(X)
-
-    def score(self, X, y):
-        return self.model.score(X, y)
-
+# explicit dimension classes can be specified like this
+svc_search = {
+    'model': Categorical([SVR()]),
+    'model__C': Real(1e-6, 1e+6, prior='log-uniform'),
+    'model__gamma': Real(1e-6, 1e+1, prior='log-uniform'),
+    'model__degree': Integer(1,8),
+    'model__kernel': Categorical(['linear', 'poly', 'rbf']),
+}
 
 opt = BayesSearchCV(
-    estimator=MLPWrapper(),
-    search_spaces={
-        'layer1': Integer(24, 256),
-        'layer2': Integer(24, 256),
-        'layer3': Integer(24, 256),
-
-
-
-    },
-    n_iter=128, verbose=2
+    pipe,
+    # (parameter space, # of evaluations)
+    [(svc_search, 40), (linsvc_search, 16)],
+    cv=3, verbose=2
 )
 
-
 opt.fit(trainX, trainY.ravel())
-best_params = opt.best_params_
-print(best_params)
-print(opt.score(testX, testY))
-print("--- %s seconds ---" % (time.time() - start_time))
+
+print("val. score: %s" % opt.best_score_)
+print("test score: %s" % opt.score(testX, testY))
+print("best params: %s" % str(opt.best_params_))

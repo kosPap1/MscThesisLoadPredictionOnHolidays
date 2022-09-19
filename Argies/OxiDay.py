@@ -96,13 +96,14 @@ y_pred = model.predict(testX)
 
 #######################################################################################################################
 # running the MLP regression
-MLPreg = MLPRegressor(hidden_layer_sizes=(12, 213, 156), random_state=0, ).fit(trainX, trainY.ravel())
+MLPreg = MLPRegressor(hidden_layer_sizes=(189, 256), random_state=1, solver='adam', activation='tanh',
+                      early_stopping=False).fit(trainX, trainY.ravel())
 
 y_pred_MLP = MLPreg.predict(testX)
 #######################################################################################################################
 # running the SVM predictor
 
-modelSVM = svm.SVR(C= 53.196, degree=4)
+modelSVM = svm.SVR(kernel='linear', C= 49.196, degree=4)
 modelSVM.fit(trainX, trainY.ravel())
 y_predSVM = modelSVM.predict(testX)
 

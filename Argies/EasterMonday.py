@@ -94,7 +94,8 @@ y_pred = model.predict(testX)
 
 #######################################################################################################################
 
-MLPreg = MLPRegressor(hidden_layer_sizes=(106, 12), random_state=1,
+MLPreg = MLPRegressor(hidden_layer_sizes=(28, 202, 24), random_state=0, activation='relu', solver='lbfgs',
+                      early_stopping=True,
                       max_iter=2000).fit(trainX, trainY.ravel())
 
 y_pred_MLP = MLPreg.predict(testX)
@@ -102,7 +103,7 @@ y_pred_MLP = MLPreg.predict(testX)
 #######################################################################################################################
 # running the SVM predictor
 
-modelSVM = svm.SVR(C=53.096416, degree=4)
+modelSVM = svm.SVR(kernel='linear', C=53.096416, degree=4)
 modelSVM.fit(trainX, trainY.ravel())
 y_predSVM = modelSVM.predict(testX)
 
